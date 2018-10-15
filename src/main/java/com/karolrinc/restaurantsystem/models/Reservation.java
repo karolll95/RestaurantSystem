@@ -17,4 +17,7 @@ public class Reservation {
 
     @OneToOne
     private RestaurantTable restaurantTable;
+
+    @OneToOne
+    Client client;
 }
