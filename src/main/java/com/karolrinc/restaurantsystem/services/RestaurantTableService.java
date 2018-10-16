@@ -21,7 +21,7 @@ public class RestaurantTableService {
         this.restaurantTableRepository = restaurantTableRepository;
     }
 
-    public Page getAllTables(int page, int pageSize, String sort) {
+    public Page findAllTables(int page, int pageSize, String sort) {
         return restaurantTableRepository.findAll(PageRequest.of(page, pageSize, Sort.by(sort)));
     }
 
@@ -37,12 +37,11 @@ public class RestaurantTableService {
         return restaurantTableRepository.save(restaurantTable);
     }
 
-    public RestaurantTable getTableById(long id) throws NotFoundException {
-        Optional<RestaurantTable> table = restaurantTableRepository.findById(id);
-        return table.orElseThrow(() -> new NotFoundException("Table with id: " + id + "not found."));
+    public RestaurantTable findTableById(long id) throws NotFoundException {
+        return restaurantTableRepository.findById(id).orElseThrow(() -> new NotFoundException("Table with id: " + id + "not found."));
     }
 
-    public Page getTablesByPersonAmount(int personAmount, int page, int pageSize, String sort) {
+    public Page findTablesByPersonAmount(int personAmount, int page, int pageSize, String sort) {
         return restaurantTableRepository.findAllByPersonAmount(personAmount, PageRequest.of(page, pageSize, Sort.by(sort)));
     }
 }

@@ -37,7 +37,7 @@ public class RestaurantTableControllerTest {
     @Test
     public void retrieveSpecificTable() throws Exception {
         // given
-        when(restaurantTableService.getTableById(Mockito.anyLong()))
+        when(restaurantTableService.findTableById(Mockito.anyLong()))
                 .thenReturn(mockTable);
         MockHttpServletRequestBuilder requestBuilder = get("/1").accept(MediaType.APPLICATION_JSON);
         String expected = "{\"id\":1,\"personAmount\":4,\"reservation\":null}";

@@ -25,9 +25,9 @@ public class RestaurantTableController {
                                           @RequestParam(name = "sort", defaultValue = "id") String sort,
                                           @RequestParam(name = "personAmount", defaultValue = "") String personAmount) {
         if (!personAmount.isEmpty()) {
-            return ResponseEntity.ok(restaurantTableService.getTablesByPersonAmount(Integer.valueOf(personAmount), page, pageSize, sort));
+            return ResponseEntity.ok(restaurantTableService.findTablesByPersonAmount(Integer.valueOf(personAmount), page, pageSize, sort));
         } else {
-            return ResponseEntity.ok(restaurantTableService.getAllTables(page, pageSize, sort));
+            return ResponseEntity.ok(restaurantTableService.findAllTables(page, pageSize, sort));
         }
     }
 
@@ -49,7 +49,7 @@ public class RestaurantTableController {
     @GetMapping(path = "/{id}")
     public ResponseEntity<?> getTableById(@PathVariable long id) {
         try {
-            return ResponseEntity.ok(restaurantTableService.getTableById(id));
+            return ResponseEntity.ok(restaurantTableService.findTableById(id));
         } catch (NotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
