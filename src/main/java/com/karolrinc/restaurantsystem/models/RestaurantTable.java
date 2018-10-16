@@ -1,12 +1,11 @@
 package com.karolrinc.restaurantsystem.models;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.*;
 
-@Data
 @Builder
+@Data
 @Entity
 @Table(name = "tables", uniqueConstraints = @UniqueConstraint(columnNames = "id"))
 public class RestaurantTable {
