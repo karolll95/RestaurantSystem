@@ -13,9 +13,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -42,6 +46,7 @@ public class ReservationController {
                                                  @RequestParam(name = "pageSize", defaultValue = "5") int pageSize,
                                                  @RequestParam(name = "sort", defaultValue = "id") String sort,
                                                  PagedResourcesAssembler<Reservation> assembler) {
+
         Page<Reservation> reservations = reservationService.findAllReservations(PageRequest.of(page, pageSize, Sort.by(sort)));
         return ResponseEntity.ok(assembler.toResource(
                 reservations,
@@ -51,19 +56,27 @@ public class ReservationController {
     }
 
     @PostMapping
-    public ResponseEntity<?> saveReservation(@RequestBody Reservation reservation) {
-        return new ResponseEntity<>(reservationService.saveReservation(reservation), HttpStatus.CREATED);
+    public ResponseEntity<?> saveReservation(@RequestBody Reservation reservation) throws URISyntaxException {
+        Resource<Reservation> reservationResource = reservationResourceAssembler.toResource(reservationService.saveReservation(reservation));
+        return ResponseEntity.created(new URI(reservationResource.getId()
+                                                                 .expand()
+                                                                 .getHref()))
+                             .body(reservationResource);
     }
 
-    @PutMapping
-    public ResponseEntity<?> updateReservation(@RequestBody Reservation reservation) {
-        return ResponseEntity.ok(reservationService.updateReservation(reservation));
+    @PutMapping(path = "/{id}")
+    public ResponseEntity<?> updateReservation(@PathVariable long id, @RequestBody Reservation reservation) throws URISyntaxException {
+        Resource<Reservation> reservationResource = reservationResourceAssembler.toResource(reservationService.updateReservation(id, reservation));
+        return ResponseEntity.created(new URI(reservationResource.getId()
+                                                                 .expand()
+                                                                 .getHref()))
+                             .body(reservationResource);
     }
 
     @DeleteMapping(path = "/{id}")
     public ResponseEntity<?> deleteReservation(@PathVariable long id) {
         reservationService.deleteReservation(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping(path = "/{id}")

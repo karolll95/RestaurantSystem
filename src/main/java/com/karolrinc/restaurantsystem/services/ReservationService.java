@@ -32,8 +32,18 @@ public class ReservationService {
         return reservationRepository.findById(id).orElseThrow(() -> new NotFoundException("Reservation with id: " + id + " not found."));
     }
 
-    public Reservation updateReservation(Reservation reservation) {
-        return reservationRepository.save(reservation);
+    public Reservation updateReservation(long id, Reservation newReservation) {
+        return reservationRepository.findById(id)
+                                    .map(reservation -> {
+                                        reservation.setRestaurantTable(newReservation.getRestaurantTable());
+                                        reservation.setClient(newReservation.getClient());
+                                        reservation.setStatus(newReservation.getStatus());
+                                        return saveReservation(reservation);
+                                    })
+                                    .orElseGet(() -> {
+                                        newReservation.setId(id);
+                                        return saveReservation(newReservation);
+                                    });
     }
 
     public void deleteReservation(long id) {
