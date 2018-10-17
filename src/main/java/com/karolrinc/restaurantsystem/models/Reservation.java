@@ -1,5 +1,6 @@
 package com.karolrinc.restaurantsystem.models;
 
+import com.karolrinc.restaurantsystem.enums.Status;
 import lombok.Builder;
 import lombok.Data;
 
@@ -20,5 +21,7 @@ public class Reservation {
     private RestaurantTable restaurantTable;
 
     @OneToOne
-    Client client;
+    private Client client;
+
+    private Status status;
 }
