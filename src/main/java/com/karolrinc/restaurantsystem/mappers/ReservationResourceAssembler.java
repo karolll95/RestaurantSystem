@@ -1,8 +1,8 @@
 package com.karolrinc.restaurantsystem.mappers;
 
 import com.karolrinc.restaurantsystem.controllers.ReservationController;
+import com.karolrinc.restaurantsystem.enums.Status;
 import com.karolrinc.restaurantsystem.models.Reservation;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Component;
@@ -15,8 +15,20 @@ public class ReservationResourceAssembler implements ResourceAssembler<Reservati
 
     @Override
     public Resource<Reservation> toResource(Reservation reservation) {
-        return new Resource<>(reservation,
-                              linkTo(methodOn(ReservationController.class).findReservationById(reservation.getId())).withSelfRel());
+        Resource<Reservation> reservationResource = new Resource<>(reservation,
+                                                                   linkTo(methodOn(ReservationController.class)
+                                                                                  .findReservationById(reservation.getId()))
+                                                                           .withSelfRel()
+        );
 
+        if (reservation.getStatus().equals(Status.IN_PROGRESS)) {
+            reservationResource.add(linkTo(methodOn(ReservationController.class)
+                                                   .cancelReservation(reservation.getId()))
+                                            .withSelfRel());
+            reservationResource.add(linkTo(methodOn(ReservationController.class)
+                                                   .completeReservation(reservation.getId()))
+                                            .withSelfRel());
+        }
+        return reservationResource;
     }
 }

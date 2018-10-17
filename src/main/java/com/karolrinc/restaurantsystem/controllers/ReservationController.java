@@ -1,5 +1,6 @@
 package com.karolrinc.restaurantsystem.controllers;
 
+import com.karolrinc.restaurantsystem.enums.Status;
 import com.karolrinc.restaurantsystem.mappers.ReservationResourceAssembler;
 import com.karolrinc.restaurantsystem.models.Client;
 import com.karolrinc.restaurantsystem.models.Reservation;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.VndErrors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +36,8 @@ public class ReservationController {
     private final ReservationResourceAssembler reservationResourceAssembler;
 
     @Autowired
-    public ReservationController(ReservationService reservationService, ClientService clientService, RestaurantTableService restaurantTableService, ReservationResourceAssembler reservationResourceAssembler) {
+    public ReservationController(ReservationService reservationService, ClientService clientService, RestaurantTableService restaurantTableService,
+                                 ReservationResourceAssembler reservationResourceAssembler) {
         this.reservationService = reservationService;
         this.clientService = clientService;
         this.restaurantTableService = restaurantTableService;
@@ -48,11 +51,10 @@ public class ReservationController {
                                                  PagedResourcesAssembler<Reservation> assembler) {
 
         Page<Reservation> reservations = reservationService.findAllReservations(PageRequest.of(page, pageSize, Sort.by(sort)));
-        return ResponseEntity.ok(assembler.toResource(
-                reservations,
-                linkTo(methodOn(ReservationController.class).findAllReservations(page, pageSize, sort, assembler)).withSelfRel()
+        return ResponseEntity.ok(assembler.toResource(reservations,
+                                                      linkTo(methodOn(ReservationController.class).findAllReservations(page, pageSize, sort, assembler))
+                                                              .withSelfRel()
         ));
-
     }
 
     @PostMapping
@@ -81,12 +83,8 @@ public class ReservationController {
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<?> findReservationById(@PathVariable long id) {
-        try {
-            Reservation reservation = reservationService.findReservationById(id);
-            return ResponseEntity.ok(reservationResourceAssembler.toResource(reservation));
-        } catch (NotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+        Reservation reservation = reservationService.findReservationById(id);
+        return ResponseEntity.ok(reservationResourceAssembler.toResource(reservation));
     }
 
     @GetMapping(path = "/clients/{id}")
@@ -95,15 +93,13 @@ public class ReservationController {
                                                      @RequestParam(name = "pageSize", defaultValue = "5") int pageSize,
                                                      @RequestParam(name = "sort", defaultValue = "id") String sort,
                                                      PagedResourcesAssembler<Reservation> assembler) {
-        try {
-            Client client = clientService.findById(id);
-            Page<Reservation> reservationPage = reservationService.findReservationsByClient(client, PageRequest.of(page, pageSize, Sort.by(sort)));
-            return ResponseEntity.ok(assembler.toResource(reservationPage, linkTo(methodOn(ReservationController.class)
-                                                                                          .findReservationByClient(id, page, pageSize, sort, assembler))
-                    .withSelfRel()));
-        } catch (NotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+
+        Client client = clientService.findById(id);
+        Page<Reservation> reservationPage = reservationService.findReservationsByClient(client, PageRequest.of(page, pageSize, Sort.by(sort)));
+        return ResponseEntity.ok(assembler.toResource(reservationPage,
+                                                      linkTo(methodOn(ReservationController.class)
+                                                                                      .findReservationByClient(id, page, pageSize, sort, assembler))
+                                                              .withSelfRel()));
     }
 
     @GetMapping(path = "/clients")
@@ -113,16 +109,14 @@ public class ReservationController {
                                                      @RequestParam(name = "pageSize", defaultValue = "5") int pageSize,
                                                      @RequestParam(name = "sort", defaultValue = "id") String sort,
                                                      PagedResourcesAssembler<Reservation> assembler) {
-        try {
-            Client client = clientService.findByFullName(firstName, lastName);
-            Page<Reservation> reservationPage = reservationService.findReservationsByClient(client, PageRequest.of(page, pageSize, Sort.by(sort)));
-            return ResponseEntity.ok(assembler.toResource(reservationPage,linkTo(methodOn(ReservationController.class)
-                                                                                           .findReservationByClient(lastName, firstName, page, pageSize, sort, assembler))
-                    .withSelfRel()));
 
-        } catch (NotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
+        Client client = clientService.findByFullName(firstName, lastName);
+        Page<Reservation> reservationPage = reservationService.findReservationsByClient(client, PageRequest.of(page, pageSize, Sort.by(sort)));
+        return ResponseEntity.ok(assembler.toResource(reservationPage,
+                                                      linkTo(methodOn(ReservationController.class)
+                                                                                      .findReservationByClient(lastName, firstName, page, pageSize, sort, assembler))
+                                                              .withSelfRel()));
+
     }
 
     @GetMapping(path = "tables/{id}")
@@ -131,13 +125,43 @@ public class ReservationController {
                                                     @RequestParam(name = "pageSize", defaultValue = "5") int pageSize,
                                                     @RequestParam(name = "sort", defaultValue = "id") String sort,
                                                     PagedResourcesAssembler<Reservation> assembler) {
-        try {
-            RestaurantTable table = restaurantTableService.findTableById(id);
-            Page<Reservation> reservationPage = reservationService.findReservationsByTable(table, PageRequest.of(page, pageSize, Sort.by(sort)));
-            return ResponseEntity.ok(assembler.toResource(reservationPage, linkTo(methodOn(ReservationController.class)
-                                                                                          .findReservationByTable(id, page, pageSize, sort, assembler)).withSelfRel()));
-        } catch (NotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+
+        RestaurantTable table = restaurantTableService.findTableById(id);
+        Page<Reservation> reservationPage = reservationService.findReservationsByTable(table, PageRequest.of(page, pageSize, Sort.by(sort)));
+        return ResponseEntity.ok(assembler.toResource(reservationPage,
+                                                      linkTo(methodOn(ReservationController.class)
+                                                                     .findReservationByTable(id, page, pageSize, sort, assembler))
+                                                              .withSelfRel()));
+
+    }
+
+    @DeleteMapping(path = "/{id}/cancel")
+    public ResponseEntity<?> cancelReservation(@PathVariable long id) {
+        Reservation reservation = reservationService.findReservationById(id);
+
+        if (reservation.getStatus().equals(Status.IN_PROGRESS)) {
+            reservation.setStatus(Status.CANCELLED);
+            return ResponseEntity.ok(reservationResourceAssembler.toResource(reservationService.saveReservation(reservation)));
+        } else {
+            return ResponseEntity
+                    .status(HttpStatus.METHOD_NOT_ALLOWED)
+                    .body(new VndErrors.VndError("Method not allowed", "You can't cancel an order that is in the "
+                                                                       + reservation.getStatus() + " status."));
+        }
+    }
+
+    @PutMapping(path = "/{id}/complete")
+    public ResponseEntity completeReservation(@PathVariable long id) {
+        Reservation reservation = reservationService.findReservationById(id);
+
+        if (reservation.getStatus().equals(Status.IN_PROGRESS)) {
+            reservation.setStatus(Status.COMPLETED);
+            return ResponseEntity.ok(reservationResourceAssembler.toResource(reservationService.saveReservation(reservation)));
+        } else {
+            return ResponseEntity
+                    .status(HttpStatus.METHOD_NOT_ALLOWED)
+                    .body(new VndErrors.VndError("Method not allowed", "You can't complete an order that is in the "
+                                                                       + reservation.getStatus() + " status."));
         }
     }
 }

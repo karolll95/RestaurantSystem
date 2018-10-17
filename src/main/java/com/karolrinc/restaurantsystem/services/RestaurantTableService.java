@@ -1,15 +1,13 @@
 package com.karolrinc.restaurantsystem.services;
 
+import com.karolrinc.restaurantsystem.exceptions.TableNotFoundException;
 import com.karolrinc.restaurantsystem.models.RestaurantTable;
 import com.karolrinc.restaurantsystem.repositories.RestaurantTableRepository;
-import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class RestaurantTableService {
@@ -37,8 +35,8 @@ public class RestaurantTableService {
         return restaurantTableRepository.save(restaurantTable);
     }
 
-    public RestaurantTable findTableById(long id) throws NotFoundException {
-        return restaurantTableRepository.findById(id).orElseThrow(() -> new NotFoundException("Table with id: " + id + "not found."));
+    public RestaurantTable findTableById(long id) {
+        return restaurantTableRepository.findById(id).orElseThrow(() -> new TableNotFoundException(id));
     }
 
     public Page findTablesByPersonAmount(int personAmount, int page, int pageSize, String sort) {

@@ -1,8 +1,8 @@
 package com.karolrinc.restaurantsystem.services;
 
+import com.karolrinc.restaurantsystem.exceptions.ClientNotFoundException;
 import com.karolrinc.restaurantsystem.models.Client;
 import com.karolrinc.restaurantsystem.repositories.ClientRepository;
-import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,12 +22,12 @@ public class ClientService {
         return clientRepository.findAllByLastNameContainingIgnoreCase(lastName, pageable);
     }
 
-    public Client findByFullName(String firstName, String lastName) throws NotFoundException {
+    public Client findByFullName(String firstName, String lastName) {
         return clientRepository.findAllByFirstNameContainingIgnoreCaseAndLastNameContainingIgnoreCase(firstName, lastName)
-                .orElseThrow(() -> new NotFoundException("Client " + firstName + " " + lastName + " not found."));
+                .orElseThrow(() -> new ClientNotFoundException(firstName + " " + lastName));
     }
 
-    public Client findById(long id) throws NotFoundException {
-        return clientRepository.findById(id).orElseThrow(() -> new NotFoundException("Client with id: " + id + " not found."));
+    public Client findById(long id) {
+        return clientRepository.findById(id).orElseThrow(() -> new ClientNotFoundException(id));
     }
 }

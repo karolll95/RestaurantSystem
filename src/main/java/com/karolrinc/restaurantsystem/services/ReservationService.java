@@ -1,5 +1,6 @@
 package com.karolrinc.restaurantsystem.services;
 
+import com.karolrinc.restaurantsystem.exceptions.ReservationNotFoundException;
 import com.karolrinc.restaurantsystem.models.Client;
 import com.karolrinc.restaurantsystem.models.Reservation;
 import com.karolrinc.restaurantsystem.models.RestaurantTable;
@@ -8,6 +9,7 @@ import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,8 +30,8 @@ public class ReservationService {
         return reservationRepository.findAll(pageable);
     }
 
-    public Reservation findReservationById(long id) throws NotFoundException {
-        return reservationRepository.findById(id).orElseThrow(() -> new NotFoundException("Reservation with id: " + id + " not found."));
+    public Reservation findReservationById(long id) {
+        return reservationRepository.findById(id).orElseThrow(() -> new ReservationNotFoundException(id));
     }
 
     public Reservation updateReservation(long id, Reservation newReservation) {
