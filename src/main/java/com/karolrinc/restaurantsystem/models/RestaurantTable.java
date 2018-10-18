@@ -13,6 +13,7 @@ public class RestaurantTable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
+    
     private int personAmount;
 
     @OneToOne
