@@ -32,16 +32,16 @@ public class ReservationController {
     private final ReservationService reservationService;
     private final ClientService clientService;
     private final RestaurantTableService restaurantTableService;
-    private final ReservationResourceAssembler reservationResourceAssembler;
+    private final ReservationResourceAssembler assembler;
     
     @Autowired
     public ReservationController(ReservationService reservationService, ClientService clientService,
                                  RestaurantTableService restaurantTableService,
-                                 ReservationResourceAssembler reservationResourceAssembler) {
+                                 ReservationResourceAssembler assembler) {
         this.reservationService = reservationService;
         this.clientService = clientService;
         this.restaurantTableService = restaurantTableService;
-        this.reservationResourceAssembler = reservationResourceAssembler;
+        this.assembler = assembler;
     }
     
     @GetMapping
@@ -59,8 +59,8 @@ public class ReservationController {
     
     @PostMapping
     public ResponseEntity<?> saveReservation(@RequestBody Reservation reservation) throws URISyntaxException {
-        Resource<Reservation> reservationResource = reservationResourceAssembler
-                .toResource(reservationService.saveReservation(reservation));
+        Resource<Reservation> reservationResource = assembler.toResource(
+                reservationService.saveReservation(reservation));
         return ResponseEntity.created(new URI(reservationResource.getId()
                                                                  .expand()
                                                                  .getHref()))
@@ -70,8 +70,8 @@ public class ReservationController {
     @PutMapping(path = "/{id}")
     public ResponseEntity<?> updateReservation(@PathVariable long id,
                                                @RequestBody Reservation reservation) throws URISyntaxException {
-        Resource<Reservation> reservationResource = reservationResourceAssembler
-                .toResource(reservationService.updateReservation(id, reservation));
+        Resource<Reservation> reservationResource = assembler.toResource(
+                reservationService.updateReservation(id, reservation));
         return ResponseEntity.created(new URI(reservationResource.getId()
                                                                  .expand()
                                                                  .getHref()))
@@ -88,7 +88,7 @@ public class ReservationController {
     @GetMapping(path = "/{id}")
     public ResponseEntity<?> findReservationById(@PathVariable long id) {
         Reservation reservation = reservationService.findReservationById(id);
-        return ResponseEntity.ok(reservationResourceAssembler.toResource(reservation));
+        return ResponseEntity.ok(assembler.toResource(reservation));
     }
     
     @GetMapping(path = "/clients/{id}")
@@ -99,13 +99,11 @@ public class ReservationController {
                                                      PagedResourcesAssembler<Reservation> assembler) {
         
         Client client = clientService.findById(id);
-        Page<Reservation> reservationPage = reservationService
-                .findReservationsByClient(client, PageRequest.of(page, pageSize, Sort.by(sort)));
-        return ResponseEntity.ok(assembler.toResource(
-                reservationPage,
-                linkTo(methodOn(ReservationController.class)
-                               .findReservationByClient(id, page, pageSize, sort, assembler))
-                        .withSelfRel()));
+        Page<Reservation> reservationPage = reservationService.findReservationsByClient(
+                client, PageRequest.of(page, pageSize, Sort.by(sort)));
+        return ResponseEntity.ok(assembler.toResource(reservationPage, linkTo(methodOn(
+                ReservationController.class).findReservationByClient(id, page, pageSize, sort,
+                                                                     assembler)).withSelfRel()));
     }
     
     @GetMapping(path = "/clients")
@@ -119,11 +117,9 @@ public class ReservationController {
         Client client = clientService.findByFullName(firstName, lastName);
         Page<Reservation> reservationPage = reservationService.findReservationsByClient(
                 client, PageRequest.of(page, pageSize, Sort.by(sort)));
-        return ResponseEntity.ok(assembler.toResource(
-                reservationPage,
-                linkTo(methodOn(ReservationController.class)
-                               .findReservationByClient(
-                                       lastName, firstName, page, pageSize, sort, assembler)).withSelfRel()));
+        return ResponseEntity.ok(assembler.toResource(reservationPage, linkTo(methodOn(
+                ReservationController.class).findReservationByClient(lastName, firstName, page, pageSize, sort,
+                                                                     assembler)).withSelfRel()));
         
     }
     
@@ -150,14 +146,12 @@ public class ReservationController {
         if (reservation.getStatus()
                        .equals(Status.IN_PROGRESS)) {
             reservation.setStatus(Status.CANCELLED);
-            return ResponseEntity
-                    .ok(reservationResourceAssembler.toResource(reservationService.saveReservation(reservation)));
+            return ResponseEntity.ok(assembler.toResource(reservationService.saveReservation(reservation)));
         } else {
-            return ResponseEntity
-                    .status(HttpStatus.METHOD_NOT_ALLOWED)
-                    .body(new VndErrors.VndError(
-                            "Method not allowed",
-                            "You can't cancel an order that is in the " + reservation.getStatus() + " status."));
+            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                                 .body(new VndErrors.VndError(
+                                         "Method not allowed",
+                                         "You can't cancel an order that is in the " + reservation.getStatus() + " status."));
         }
     }
     
@@ -168,14 +162,12 @@ public class ReservationController {
         if (reservation.getStatus()
                        .equals(Status.IN_PROGRESS)) {
             reservation.setStatus(Status.COMPLETED);
-            return ResponseEntity
-                    .ok(reservationResourceAssembler.toResource(reservationService.saveReservation(reservation)));
+            return ResponseEntity.ok(assembler.toResource(reservationService.saveReservation(reservation)));
         } else {
-            return ResponseEntity
-                    .status(HttpStatus.METHOD_NOT_ALLOWED)
-                    .body(new VndErrors.VndError(
-                            "Method not allowed",
-                            "You can't complete an order that is in the " + reservation.getStatus() + " status."));
+            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                                 .body(new VndErrors.VndError(
+                                         "Method not allowed",
+                                         "You can't complete an order that is in the " + reservation.getStatus() + " status."));
         }
     }
 }

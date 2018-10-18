@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
 public class TableNotFoundAdvice {
-
+    
     @ResponseBody
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)

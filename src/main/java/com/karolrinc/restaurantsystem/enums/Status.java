@@ -4,7 +4,7 @@ public enum Status {
     IN_PROGRESS("in progress"), COMPLETED("completed"), CANCELLED("canceled");
     String status;
 
-    private Status(String status) {
+    Status(String status) {
         this.status = status;
     }
 

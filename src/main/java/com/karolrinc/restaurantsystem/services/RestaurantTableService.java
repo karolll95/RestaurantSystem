@@ -11,35 +11,37 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class RestaurantTableService {
-
+    
     private final RestaurantTableRepository restaurantTableRepository;
-
+    
     @Autowired
     public RestaurantTableService(RestaurantTableRepository restaurantTableRepository) {
         this.restaurantTableRepository = restaurantTableRepository;
     }
-
-    public Page findAllTables(int page, int pageSize, String sort) {
+    
+    public Page<RestaurantTable> findAllTables(int page, int pageSize, String sort) {
         return restaurantTableRepository.findAll(PageRequest.of(page, pageSize, Sort.by(sort)));
     }
-
+    
     public RestaurantTable saveTable(RestaurantTable restaurantTable) {
         return restaurantTableRepository.save(restaurantTable);
     }
-
+    
     public void deleteTable(long id) {
         restaurantTableRepository.deleteById(id);
     }
-
+    
     public RestaurantTable updateTable(RestaurantTable restaurantTable) {
         return restaurantTableRepository.save(restaurantTable);
     }
-
+    
     public RestaurantTable findTableById(long id) {
-        return restaurantTableRepository.findById(id).orElseThrow(() -> new TableNotFoundException(id));
+        return restaurantTableRepository.findById(id)
+                                        .orElseThrow(() -> new TableNotFoundException(id));
     }
-
-    public Page findTablesByPersonAmount(int personAmount, int page, int pageSize, String sort) {
-        return restaurantTableRepository.findAllByPersonAmount(personAmount, PageRequest.of(page, pageSize, Sort.by(sort)));
+    
+    public Page<RestaurantTable> findTablesByPersonAmount(int personAmount, int page, int pageSize, String sort) {
+        return restaurantTableRepository.findAllByPersonAmount(
+                personAmount, PageRequest.of(page, pageSize, Sort.by(sort)));
     }
 }
